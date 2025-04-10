@@ -8,5 +8,4 @@ jobs:
       - name: Retrieve secret
         env:
           super_secret: ${{ secrets.TEST_SECRET }}
-        run: |
-          example-command "$super_secret"
+        run: echo "💡 TEST_SECRET Env ${{ super_secret }}"
