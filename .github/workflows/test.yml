@@ -7,5 +7,5 @@ jobs:
     steps:
       - name: Retrieve secret
         env:
-          super_secret: ${{ secrets.TEST_SECRET }}
-        run: echo "💡 TEST_SECRET Env ${{ super_secret }}"
+          secret: ${{ secrets.TEST_SECRET }}
+        run: echo "💡 TEST_SECRET Env ${{ secret }}"
