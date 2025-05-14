@@ -1,6 +1,17 @@
 name: Test deploy workflow dispatch 4
 run-name: Test deploy workflow dispatch 4
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
 
 jobs:
   log-the-inputs:
