@@ -1,0 +1,11 @@
+name: Test deploy workflow dispatch 3
+run-name: Test deploy workflow dispatch 3
+on:
+  workflow_dispatch:
+
+jobs:
+  log-the-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Test"
