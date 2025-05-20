@@ -1,40 +1,37 @@
-name: Get User Info from ENV Map
+name: Global ENV User Info Workflow
 
 on:
   workflow_dispatch:
     inputs:
       userId:
-        description: 'ID of the user'
+        description: 'User ID'
         required: true
         default: 'user1'
 
+env:
+  USER_DATA: >
+    {
+      "user1": {"name": "Alice", "age": 30, "sex": "Female"},
+      "user2": {"name": "Bob", "age": 25, "sex": "Male"},
+      "user3": {"name": "Charlie", "age": 40, "sex": "Non-binary"}
+    }
+
 jobs:
-  user-info:
+  get-user-info:
     runs-on: ubuntu-latest
-
-    env:
-      # Định nghĩa toàn bộ dữ liệu user dưới dạng JSON trong biến môi trường
-      USER_DATA: >
-        {
-          "user1": {"name": "Alice", "age": 30, "sex": "Female"},
-          "user2": {"name": "Bob", "age": 25, "sex": "Male"},
-          "user3": {"name": "Charlie", "age": 40, "sex": "Non-binary"}
-        }
-
     steps:
-      - name: Get user info from JSON map in env
-        id: get-user
+      - name: Extract user info from global env
+        id: extract
         run: |
           USER_ID="${{ github.event.inputs.userId }}"
-          DATA="$USER_DATA"
+          DATA='${{ env.USER_DATA }}'
 
-          # Kiểm tra tồn tại
+          # Kiểm tra user
           if ! echo "$DATA" | jq -e --arg id "$USER_ID" 'has($id)' > /dev/null; then
             echo "User ID '$USER_ID' not found."
             exit 1
           fi
 
-          # Trích xuất dữ liệu
           NAME=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].name')
           AGE=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].age')
           SEX=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].sex')
@@ -43,8 +40,8 @@ jobs:
           echo "age=$AGE" >> $GITHUB_OUTPUT
           echo "sex=$SEX" >> $GITHUB_OUTPUT
 
-      - name: Show extracted user info
+      - name: Show user info
         run: |
-          echo "Name: ${{ steps.get-user.outputs.name }}"
-          echo "Age: ${{ steps.get-user.outputs.age }}"
-          echo "Sex: ${{ steps.get-user.outputs.sex }}"
+          echo "Name: ${{ steps.extract.outputs.name }}"
+          echo "Age: ${{ steps.extract.outputs.age }}"
+          echo "Sex: ${{ steps.extract.outputs.sex }}"userId }}"_
