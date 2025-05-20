@@ -1,21 +1,50 @@
-name: Test deploy workflow dispatch 2
-run-name: Test deploy workflow dispatch 2
+name: Get User Info from ENV Map
+
 on:
   workflow_dispatch:
     inputs:
-      logLevel:
-        description: 'Log level'
+      userId:
+        description: 'ID of the user'
         required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
+        default: 'user1'
 
 jobs:
-  log-the-inputs:
+  user-info:
     runs-on: ubuntu-latest
+
+    env:
+      # Định nghĩa toàn bộ dữ liệu user dưới dạng JSON trong biến môi trường
+      USER_DATA: >
+        {
+          "user1": {"name": "Alice", "age": 30, "sex": "Female"},
+          "user2": {"name": "Bob", "age": 25, "sex": "Male"},
+          "user3": {"name": "Charlie", "age": 40, "sex": "Non-binary"}
+        }
+
     steps:
-      - run: |
-          echo "Test"
+      - name: Get user info from JSON map in env
+        id: get-user
+        run: |
+          USER_ID="${{ github.event.inputs.userId }}"
+          DATA="$USER_DATA"
+
+          # Kiểm tra tồn tại
+          if ! echo "$DATA" | jq -e --arg id "$USER_ID" 'has($id)' > /dev/null; then
+            echo "User ID '$USER_ID' not found."
+            exit 1
+          fi
+
+          # Trích xuất dữ liệu
+          NAME=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].name')
+          AGE=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].age')
+          SEX=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].sex')
+
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "age=$AGE" >> $GITHUB_OUTPUT
+          echo "sex=$SEX" >> $GITHUB_OUTPUT
+
+      - name: Show extracted user info
+        run: |
+          echo "Name: ${{ steps.get-user.outputs.name }}"
+          echo "Age: ${{ steps.get-user.outputs.age }}"
+          echo "Sex: ${{ steps.get-user.outputs.sex }}"
