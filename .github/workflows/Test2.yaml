@@ -1,14 +1,15 @@
-name: Global ENV User Info Workflow
+name: Get User Info from ENV Map
 
 on:
   workflow_dispatch:
     inputs:
       userId:
-        description: 'User ID'
+        description: "ID of the user"
         required: true
-        default: 'user1'
+        default: "user1"
 
 env:
+  # Định nghĩa toàn bộ dữ liệu user dưới dạng JSON trong biến môi trường
   USER_DATA: >
     {
       "user1": {"name": "Alice", "age": 30, "sex": "Female"},
@@ -17,21 +18,23 @@ env:
     }
 
 jobs:
-  get-user-info:
+  user-info:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Extract user info from global env
-        id: extract
+      - name: Get user info from JSON map in env
+        id: get-user
         run: |
           USER_ID="${{ github.event.inputs.userId }}"
-          DATA='${{ env.USER_DATA }}'
+          DATA="$USER_DATA"
 
-          # Kiểm tra user
+          # Kiểm tra tồn tại
           if ! echo "$DATA" | jq -e --arg id "$USER_ID" 'has($id)' > /dev/null; then
             echo "User ID '$USER_ID' not found."
             exit 1
           fi
 
+          # Trích xuất dữ liệu
           NAME=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].name')
           AGE=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].age')
           SEX=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].sex')
@@ -40,8 +43,8 @@ jobs:
           echo "age=$AGE" >> $GITHUB_OUTPUT
           echo "sex=$SEX" >> $GITHUB_OUTPUT
 
-      - name: Show user info
+      - name: Show extracted user info
         run: |
-          echo "Name: ${{ steps.extract.outputs.name }}"
-          echo "Age: ${{ steps.extract.outputs.age }}"
-          echo "Sex: ${{ steps.extract.outputs.sex }}"userId }}"_
+          echo "Name: ${{ steps.get-user.outputs.name }}"
+          echo "Age: ${{ steps.get-user.outputs.age }}"
+          echo "Sex: ${{ steps.get-user.outputs.sex }}"
