@@ -1,50 +1,40 @@
-name: Get User Info from ENV Map
+name: Test many job
 
 on:
   workflow_dispatch:
     inputs:
-      userId:
-        description: "ID of the user"
+      flag:
         required: true
-        default: "user1"
-
-env:
-  # Định nghĩa toàn bộ dữ liệu user dưới dạng JSON trong biến môi trường
-  USER_DATA: >
-    {
-      "user1": {"name": "Alice", "age": 30, "sex": "Female"},
-      "user2": {"name": "Bob", "age": 25, "sex": "Male"},
-      "user3": {"name": "Charlie", "age": 40, "sex": "Non-binary"}
-    }
+        default: "1"
 
 jobs:
-  user-info:
+  deploy:
     runs-on: ubuntu-latest
-
+    needs: deploy
     steps:
-      - name: Get user info from JSON map in env
-        id: get-user
+      - name: deploy
         run: |
-          USER_ID="${{ github.event.inputs.userId }}"
-          DATA="$USER_DATA"
+          echo 1.success
 
-          # Kiểm tra tồn tại
-          if ! echo "$DATA" | jq -e --arg id "$USER_ID" 'has($id)' > /dev/null; then
-            echo "User ID '$USER_ID' not found."
+  test:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: deploy
+        run: |
+          if [[ ${{ github.event.inputs.ECS_API_NAME }} ==  '1' ]]; then
+            echo 2.success
+            exit 0
+          else
+            echo 2.failed
             exit 1
           fi
+          
 
-          # Trích xuất dữ liệu
-          NAME=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].name')
-          AGE=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].age')
-          SEX=$(echo "$DATA" | jq -r --arg id "$USER_ID" '.[$id].sex')
-
-          echo "name=$NAME" >> $GITHUB_OUTPUT
-          echo "age=$AGE" >> $GITHUB_OUTPUT
-          echo "sex=$SEX" >> $GITHUB_OUTPUT
-
-      - name: Show extracted user info
+  summary:
+    runs-on: ubuntu-latest
+    needs: [deploy, test]
+    steps:
+      - name: Summary
         run: |
-          echo "Name: ${{ steps.get-user.outputs.name }}"
-          echo "Age: ${{ steps.get-user.outputs.age }}"
-          echo "Sex: ${{ steps.get-user.outputs.sex }}"
+          echo 3.success
