@@ -11,12 +11,12 @@ jobs:
   check-pr:
     runs-on: ubuntu-latest
     outputs:
-      pr-number: ${{ steps.check-prs.outputs.PR_NUMBER }}
+      pr-number: ${{ env.PR_NUMBER  }}
     steps:
       - name: Check PRs
         id: check-prs
         run: |
-          echo "PR_NUMBER=${{ github.event.inputs.flag }}" >> $GITHUB_OUTPUT
+          echo "PR_NUMBER=${{ github.event.inputs.flag }}" >> $GITHUB_ENV
 
   publish:
     needs: [check-pr]
@@ -24,4 +24,4 @@ jobs:
     steps:
       - name: deploy
         run: |
-          echo ${{ needs.check-pr.outputs.pr-number }}
+          echo ${{ needs.check-pr.outputs.pr-number }
