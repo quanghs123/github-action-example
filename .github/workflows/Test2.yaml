@@ -1,5 +1,5 @@
 name: Test many job
-
+run-name: Deploy to ${{ inputs.flag }}
 on:
   workflow_dispatch:
     inputs:
