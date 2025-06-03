@@ -19,11 +19,14 @@ jobs:
     if: ${{ github.event.inputs.mode == '1' }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Đang chạy job2"
+      - run: |
+          echo "Đang chạy job2"
+          exit 1
+
 
   job3:
     runs-on: ubuntu-latest
     needs: [job1, job2]
-    if: ${{ (github.event.inputs.mode == '1' && success()) || (github.event.inputs.mode == '2' && needs.job1.result == 'success') }}
+    if: ${{ (github.event.inputs.mode == '1' && needs.job2.result == 'success') || (github.event.inputs.mode == '2' && needs.job1.result == 'success') }}
     steps:
       - run: echo "Đang chạy job3"
